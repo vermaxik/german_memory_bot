@@ -1,5 +1,7 @@
-adapter: postgresql
-database: telegrambotboilerplate
-encoding: unicode
+adapter: mysql2
+username: root
+password:
+database: database
+encoding: utf8mb4
 pool: 5
 timeout: 5000

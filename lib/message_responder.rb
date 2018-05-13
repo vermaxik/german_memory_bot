@@ -1,15 +1,23 @@
 require './models/user'
+require './models/word'
 require './lib/message_sender'
+require 'google/cloud/translate'
 
 class MessageResponder
   attr_reader :message
   attr_reader :bot
   attr_reader :user
+  attr_reader :translator
 
   def initialize(options)
     @bot = options[:bot]
     @message = options[:message]
-    @user = User.find_or_create_by(uid: message.from.id)
+    @user = User.where(uid: message.from.id).first_or_create do |user|
+      user.name = "#{message.from.first_name} #{message.from.last_name}"
+      user.login = message.from.username
+      user.created_at = Time.current
+    end
+    @translator = Google::Cloud::Translate.new(key: options[:google_api_token])
   end
 
   def respond
@@ -19,6 +27,18 @@ class MessageResponder
 
     on /^\/stop/ do
       answer_with_farewell_message
+    end
+
+    on /^\/list/ do
+      answer_with_list
+    end
+
+    on /^\/learn/ do
+      answer_with_learn_mode
+    end
+
+    on /^[aA-zZ]/ do
+      translate_word_and_answer
     end
   end
 
@@ -39,15 +59,69 @@ class MessageResponder
     end
   end
 
+  def answer_with_learn_mode
+    word = user.words.sample
+    word_variant = [:translate, :word]
+    word_rand = rand(0..1)
+    message_out = word.send(word_variant[word_rand])
+    right_answer = word.send(word_rand.zero? ? word_variant[1] : word_variant[0] )
+    answers = Word.similar(word).pluck(:word) + [right_answer]
+    answer_with_answers message_out, answers.shuffle
+  end
+
+  def answer_with_list
+    words = []
+    words += user.words.de_en.pluck(:word, :translate)
+    words += user.words.en_de.pluck(:translate, :word)
+
+    message = words.map{ |de, en| "#{de.capitalize} — #{en}\n"}.join #\u{1F525}
+
+    answer_with_message message
+  end
+
+  def translate_word_and_answer
+    text = message.text.strip
+    word = user.words.where(word: text).or(user.words.where(translate: text)).first_or_create do |w|
+      translate          = translate(text)
+      w.word             = text
+      w.translate        = translate[:text]
+      w.lang_from        = translate[:lang_from]
+      w.lang_to          = translate[:lang_to]
+      w.word_count       = text.split.count
+      w.translate_count  = translate[:text].split.count
+      w.created_at       = Time.current
+      w.updated_at       = Time.current
+    end
+
+    message_out = if word.translate.downcase == message.text.downcase && word.word.downcase == message.text.downcase
+                word.delete
+                I18n.t('bad_word_income')
+              else
+                word.translate.downcase == text.downcase ? word.word : word.translate
+              end
+
+    answer_with_message message_out
+  end
+
   def answer_with_greeting_message
     answer_with_message I18n.t('greeting_message')
   end
 
   def answer_with_farewell_message
-    answer_with_message I18n.t('farewell_message')
+    answer_with_answers I18n.t('farewell_message')
   end
 
   def answer_with_message(text)
     MessageSender.new(bot: bot, chat: message.chat, text: text).send
+  end
+
+  def answer_with_answers(text, answers)
+    MessageSender.new(bot: bot, chat: message.chat, text: text, answers: answers).send
+  end
+
+  def translate(text)
+    result = translator.translate text, from: 'de', to: 'en'
+    result = translator.translate text, from: 'en', to: 'de' if result.text.downcase == text.downcase
+    {text: result.text, lang_from: result.from, lang_to: result.to}
   end
 end

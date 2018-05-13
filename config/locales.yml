@@ -1,3 +1,4 @@
 en:
   greeting_message: "Hi! Telegram is awesome!"
   farewell_message: "Bye! I'll miss you :("
+  bad_word_income: "The word has typo. Please try agian."
