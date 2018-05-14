@@ -108,7 +108,7 @@ class MessageResponder
   end
 
   def answer_with_farewell_message
-    answer_with_answers I18n.t('farewell_message')
+    answer_with_message I18n.t('farewell_message')
   end
 
   def answer_with_message(text)
