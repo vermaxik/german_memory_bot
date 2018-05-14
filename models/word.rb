@@ -3,6 +3,7 @@ require 'active_record'
 class Word < ActiveRecord::Base
   belongs_to :user
 
+  scope :waiting, ->{ where(waiting: true) }
   scope :de_en, -> { where(lang_from: :de) }
   scope :en_de, -> { where(lang_to: :de) }
 

@@ -40,6 +40,10 @@ class MessageResponder
     on /^[aA-zZ]/ do
       translate_word_and_answer
     end
+
+    on /^\u{2754} [aA-zZ]/ do
+      answer_with_learn_result
+    end
   end
 
   private
@@ -59,13 +63,25 @@ class MessageResponder
     end
   end
 
-  def answer_with_learn_mode
+  def answer_with_learn_result
+    expected_word = user.words.waiting.first
+    word_income   = message.text.strip.gsub(/[\u{2754} ]/, '').downcase
+    accepted_variants = [expected_word.word.downcase, expected_word.translate.downcase]
+    word = accepted_variants.include?(word_income)
+    answer_with_learn_mode(word)
+  end
+
+  def answer_with_learn_mode(learn_result = nil)
+    user.words.update_all(waiting: false) # reset all waiting
     word = user.words.sample
     word_variant = [:translate, :word]
     word_rand = rand(0..1)
     message_out = word.send(word_variant[word_rand])
     right_answer = word.send(word_rand.zero? ? word_variant[1] : word_variant[0] )
     answers = Word.similar(word).pluck(:word) + [right_answer]
+    answers.map!{ |a| "\u{2754} #{a.capitalize}"}
+    word.update(waiting: true)
+    message_out = "#{learn_result}\n\n" + message_out
     answer_with_answers message_out, answers.shuffle
   end
 
