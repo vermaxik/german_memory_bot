@@ -2,6 +2,7 @@ require './models/user'
 require './models/word'
 require './lib/message_sender'
 require 'google/cloud/translate'
+require './translate/learn'
 
 class MessageResponder
   attr_reader :message
@@ -64,25 +65,18 @@ class MessageResponder
   end
 
   def answer_with_learn_result
-    expected_word = user.words.waiting.first
-    word_income   = message.text.strip.gsub(/[\u{2754} ]/, '').downcase
-    accepted_variants = [expected_word.word.downcase, expected_word.translate.downcase]
-    word = accepted_variants.include?(word_income)
-    answer_with_learn_mode(word)
+    result  = Translate::Learn.new(message.text.strip, user).check_word
+    learn   = Translate::Learn.new(message.text.strip, user).push_word
+
+    message = (result == true) ? "\u{2705} Correct" : "\u{274C} Wrong"
+    message = "#{message}\n\n".concat(learn[:message])
+    answer_with_answers message, learn[:kb_answers]
+
   end
 
-  def answer_with_learn_mode(learn_result = nil)
-    user.words.update_all(waiting: false) # reset all waiting
-    word = user.words.sample
-    word_variant = [:translate, :word]
-    word_rand = rand(0..1)
-    message_out = word.send(word_variant[word_rand])
-    right_answer = word.send(word_rand.zero? ? word_variant[1] : word_variant[0] )
-    answers = Word.similar(word).pluck(:word) + [right_answer]
-    answers.map!{ |a| "\u{2754} #{a.capitalize}"}
-    word.update(waiting: true)
-    message_out = "#{learn_result}\n\n" + message_out
-    answer_with_answers message_out, answers.shuffle
+  def answer_with_learn_mode
+    learn = Translate::Learn.new(message.text.strip, user).push_word
+    answer_with_answers learn[:message], learn[:kb_answers]
   end
 
   def answer_with_list
