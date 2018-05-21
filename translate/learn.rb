@@ -15,20 +15,30 @@ module Translate
     end
 
     def check_word
-      expected_words.include?(input_word)
+      result = expected_words.include?(input_word)
+      if result == true
+        waiting_word.increment!(:learn_correct)
+      else
+        waiting_word.increment!(:learn_wrong)
+      end
+      { message: result, right_answer: expected_words.join(' - ') }
     end
 
     def push_word
       user.words.update_all(waiting: false) # reset all waiting
       sample_word.update(waiting: true)
+      sample_word.increment!(:learn_views)
 
-      {message: outcome_word, kb_answers: answer_variants.shuffle}
+      { message: outcome_word, kb_answers: answer_variants.shuffle }
     end
 
   private
     def expected_words
-      word = user.words.waiting.first
-      [word.translate, word.word].map(&:downcase)
+      [waiting_word.translate, waiting_word.word].map(&:downcase)
+    end
+
+    def waiting_word
+      user.words.waiting.first
     end
 
     def input_word
@@ -36,7 +46,7 @@ module Translate
     end
 
     def sample_word
-      @sample_word ||= user.words.sample
+      @sample_word ||= user.words.customize_sample
     end
 
     def outcome_word

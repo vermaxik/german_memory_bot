@@ -65,10 +65,12 @@ class MessageResponder
   end
 
   def answer_with_learn_result
-    result  = Translate::Learn.new(message.text.strip, user).check_word
+    check  = Translate::Learn.new(message.text.strip, user).check_word
     learn   = Translate::Learn.new(message.text.strip, user).push_word
 
-    message = (result == true) ? "\u{2705} Correct" : "\u{274C} Wrong"
+    result_correct = "\u{2705} Correct"
+    result_wrong   = "\u{274C} Wrong, \u{1F44D} #{check[:right_answer]}"
+    message = (check[:message] == true) ? result_correct : result_wrong
     message = "#{message}\n\n".concat(learn[:message])
     answer_with_answers message, learn[:kb_answers]
 
