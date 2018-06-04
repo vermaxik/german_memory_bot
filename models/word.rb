@@ -8,7 +8,7 @@ class Word < ActiveRecord::Base
   scope :waiting, ->{ where(waiting: true) }
   scope :de_en, -> { where(lang_from: :de) }
   scope :en_de, -> { where(lang_to: :de) }
-  scope :training, -> { where("(FLOOR(#{SCORE_PASSED_MIN} + learn_wrong/2) > learn_correct)").order(created_at: :asc).limit(10) }
+  scope :training, -> { where("(FLOOR(#{SCORE_PASSED_MIN} + learn_wrong/2) > learn_correct)").order(created_at: :asc).limit(15) }
 
   def self.similar(word)
     where(word_count: word.word_count).where.not(id: word.id).sample(3)
