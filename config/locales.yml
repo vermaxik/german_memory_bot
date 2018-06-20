@@ -1,4 +1,19 @@
 en:
-  greeting_message: "Hi! Telegram is awesome!"
+  greeting_message: |
+    Hi! Welcome to @german_memory_bot.
+    I will help you with memorizing your words.
+    I can:
+    - translate word from/to de <-> en (just send me a word e.g. "table")
+    - keep your words in /list (when you send a word - I'll save it for you)
+    - I help you remember your words via /learn mode (try it easy)
+
+    I hope I'll be helpful for you.
+    Commands:
+    /start - how to use instruction
+    /list  - list of your words
+    /learn - start learn words
+    /stop  - stop receive word
+
+    If you have troubles or question just write to @vermaxik.
   farewell_message: "Bye! I'll miss you :("
   bad_word_income: "The word has typo. Please try agian."
