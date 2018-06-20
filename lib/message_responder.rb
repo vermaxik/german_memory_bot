@@ -86,7 +86,7 @@ class MessageResponder
     words += user.words.de_en.pluck(:word, :translate)
     words += user.words.en_de.pluck(:translate, :word)
 
-    message = words.map{ |de, en| "#{de.capitalize} — #{en}\n"}.join #\u{1F525}
+    message = words.sort_by{|de, en| de }.map{ |de, en| "#{de.capitalize} — #{en}\n"}.join #\u{1F525}
 
     answer_with_message message
   end
