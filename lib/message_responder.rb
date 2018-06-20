@@ -38,7 +38,7 @@ class MessageResponder
       answer_with_learn_mode
     end
 
-    on /^[aA-zZ]/ do
+    on /^[aA-zZäÄöÖüÜ]/ do
       translate_word_and_answer
     end
 
