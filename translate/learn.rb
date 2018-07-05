@@ -26,7 +26,7 @@ module Translate
 
     def push_word
       user.words.update_all(waiting: false) # reset all waiting
-      sample_word.update(waiting: true)
+      sample_word.update(waiting: true, updated_at: Time.now)
       sample_word.increment!(:learn_views)
 
       { message: outcome_word, kb_answers: answer_variants.shuffle }

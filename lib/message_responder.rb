@@ -38,11 +38,11 @@ class MessageResponder
       answer_with_learn_mode
     end
 
-    on /^[aA-zZäÄöÖüÜ]/ do
+    on /^[aA-zZäÄöÖüÜß]/ do
       translate_word_and_answer
     end
 
-    on /^\u{2754} [aA-zZ]/ do
+    on /^\u{2754} [aA-zZäÄöÖüÜß]/ do
       answer_with_learn_result
     end
   end
@@ -104,6 +104,8 @@ class MessageResponder
       w.created_at       = Time.current
       w.updated_at       = Time.current
     end
+
+    word.update(learn_correct: 0, learn_wrong: 0) if word.passed? # reset learn stats if you ask about word again
 
     message_out = if word.translate.downcase == message.text.downcase && word.word.downcase == message.text.downcase
                 word.delete
