@@ -45,6 +45,10 @@ class MessageResponder
     on /^\u{2754} [aA-zZäÄöÖüÜß]/ do
       answer_with_learn_result
     end
+
+    on /^\/delete [aA-zZäÄöÖüÜß]/ do
+      delete_and_confirm
+    end
   end
 
   private
@@ -88,7 +92,7 @@ class MessageResponder
 
     message = words.sort_by{|de, en| de }.map{ |de, en| "#{de.capitalize} — #{en}\n"}.join #\u{1F525}
 
-    answer_with_message message
+    answer_with_message message[0...4096] # tmp fix to limit of response
   end
 
   def translate_word_and_answer
@@ -123,6 +127,11 @@ class MessageResponder
 
   def answer_with_farewell_message
     answer_with_message I18n.t('farewell_message')
+  end
+
+  def delete_and_confirm
+    #text = message.text.strip
+    answer_with_message "Deleting in progress ..."
   end
 
   def answer_with_message(text)
