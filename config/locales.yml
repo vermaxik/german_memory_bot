@@ -17,3 +17,5 @@ en:
     If you have troubles or question just write to @vermaxik.
   farewell_message: "Bye! I'll miss you :("
   bad_word_income: "The word has typo. Please try agian."
+  errors:
+    empty_list: Your list is empty

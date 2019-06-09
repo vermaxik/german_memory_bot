@@ -91,7 +91,7 @@ class MessageResponder
     words += user.words.en_de.pluck(:translate, :word)
 
     message = words.sort_by{|de, en| de }.map{ |de, en| "#{de.capitalize} — #{en}\n"}.join #\u{1F525}
-
+    return answer_with_message I18n.t('errors.empty_list') if message.blank?
     answer_with_message message[0...4096] # tmp fix to limit of response
   end
 
