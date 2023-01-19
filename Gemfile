@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'telegram-bot-ruby', '0.8.6.1'
-gem 'activerecord', '5.1'
+gem 'activerecord', '6.0.6.1'
 gem 'i18n'
 gem 'mysql2'
 gem 'rake'
